@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "research-crew"
+version = "0.1.0"
+description = "Multi-agent research and report pipeline built on CrewAI"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+license = { text = "MIT" }
+dependencies = [
+  "crewai>=0.150.0",
+  "crewai-tools>=0.50.0",
+  "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pyyaml>=6.0"]
+
+[project.scripts]
+research-crew = "research_crew.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+research_crew = ["config/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

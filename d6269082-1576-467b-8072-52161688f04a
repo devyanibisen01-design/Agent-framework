@@ -1,0 +1,73 @@
+import os
+
+from crewai import LLM, Agent, Crew, Process, Task
+from crewai.project import CrewBase, agent, crew, task
+
+from research_crew.tools.text_tools import WordCountTool
+
+
+def get_llm() -> LLM:
+    """LLM configured via the MODEL env var (any LiteLLM model string)."""
+    return LLM(model=os.getenv("MODEL", "gpt-4o-mini"), temperature=0.3)
+
+
+def research_tools() -> list:
+    """Adds web search only when a Serper key is available."""
+    if os.getenv("SERPER_API_KEY"):
+        from crewai_tools import SerperDevTool
+
+        return [SerperDevTool()]
+    return []
+
+
+@CrewBase
+class ResearchCrew:
+    """Researcher -> Analyst -> Writer."""
+
+    agents_config = "config/agents.yaml"
+    tasks_config = "config/tasks.yaml"
+
+    @agent
+    def researcher(self) -> Agent:
+        return Agent(
+            config=self.agents_config["researcher"],
+            tools=research_tools(),
+            llm=get_llm(),
+            verbose=True,
+        )
+
+    @agent
+    def analyst(self) -> Agent:
+        return Agent(
+            config=self.agents_config["analyst"], llm=get_llm(), verbose=True
+        )
+
+    @agent
+    def writer(self) -> Agent:
+        return Agent(
+            config=self.agents_config["writer"],
+            tools=[WordCountTool()],
+            llm=get_llm(),
+            verbose=True,
+        )
+
+    @task
+    def research_task(self) -> Task:
+        return Task(config=self.tasks_config["research_task"])
+
+    @task
+    def analysis_task(self) -> Task:
+        return Task(config=self.tasks_config["analysis_task"])
+
+    @task
+    def report_task(self) -> Task:
+        return Task(config=self.tasks_config["report_task"])
+
+    @crew
+    def crew(self) -> Crew:
+        return Crew(
+            agents=self.agents,
+            tasks=self.tasks,
+            process=Process.sequential,
+            verbose=True,
+        )

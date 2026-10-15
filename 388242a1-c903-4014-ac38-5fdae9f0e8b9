@@ -1,0 +1,59 @@
+# CrewAI Research Crew
+
+A multi-agent pipeline built with [CrewAI](https://github.com/crewAIInc/crewAI). Three agents collaborate sequentially to turn a topic into a polished Markdown report:
+
+1. **Researcher** gathers facts (web search if a Serper key is set)
+2. **Analyst** extracts insights and flags weak claims
+3. **Writer** produces the final `output/report.md`
+
+## Quick start
+
+```bash
+git clone https://github.com/<your-username>/crewai-research-crew.git
+cd crewai-research-crew
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+cp .env.example .env    # then add your API key(s)
+python -m research_crew.main --topic "Solid-state batteries"
+```
+
+The report is saved to `output/report.md`.
+
+## Configuration
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `OPENAI_API_KEY` | Yes (default model) | LLM access |
+| `MODEL` | No | Any LiteLLM model string, e.g. `gpt-4o-mini`, `anthropic/claude-sonnet-4-5` |
+| `SERPER_API_KEY` | No | Enables live web search |
+
+To use another provider, set `MODEL` and that provider's API key (e.g. `ANTHROPIC_API_KEY`).
+
+## Project structure
+
+```
+src/research_crew/
+  config/agents.yaml   # agent roles, goals, backstories
+  config/tasks.yaml    # task descriptions and expected outputs
+  tools/text_tools.py  # custom tool example
+  crew.py              # wires agents + tasks into a Crew
+  main.py              # CLI entry point
+tests/                 # pytest suite
+.github/workflows/     # CI
+```
+
+## Customizing
+
+- Edit `agents.yaml` / `tasks.yaml` to change behavior without touching code.
+- Add tools in `tools/` and attach them in `crew.py`.
+- Switch to `Process.hierarchical` in `crew.py` (requires a `manager_llm`).
+
+## Development
+
+```bash
+pytest
+```
+
+## License
+
+MIT

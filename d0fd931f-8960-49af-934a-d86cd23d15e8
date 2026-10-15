@@ -1,0 +1,19 @@
+from pathlib import Path
+
+import yaml
+
+from research_crew.tools.text_tools import WordCountTool
+
+CONFIG = Path(__file__).parent.parent / "src" / "research_crew" / "config"
+
+
+def test_word_count_tool():
+    assert WordCountTool()._run("one two three") == "3 words"
+
+
+def test_configs_are_consistent():
+    agents = yaml.safe_load((CONFIG / "agents.yaml").read_text())
+    tasks = yaml.safe_load((CONFIG / "tasks.yaml").read_text())
+    for name, cfg in tasks.items():
+        assert cfg["agent"] in agents, f"{name} references unknown agent"
+        assert cfg["description"] and cfg["expected_output"]
